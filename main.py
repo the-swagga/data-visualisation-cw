@@ -11,7 +11,7 @@ from vega_datasets import data
 # North Macedonia - ID:807 Population:1.81 GDP:19
 # Western Sahara - ID:732 Population:0.6 GDP:1 - No reliable data, imputed with rough estimates
 
-dataset = pd.read_csv('country_economics_data.csv')
+dataset = pd.read_csv('mod_country_economics_data.csv')
 dataset['GDP Per Capita'] = dataset['GDP'] / dataset['Population']
 dataset['ID'] = dataset['ID'].astype(int)
 
@@ -21,14 +21,13 @@ chart = alt.Chart(countries).mark_geoshape(
     stroke='white',
     strokeWidth=0.25
 ).encode(
-    color=alt.Color('GDP Per Capita:Q', scale=alt.Scale(range=['lightblue', 'darkblue']), title='GDP Per Capita'),
+    color=alt.Color('GDP Per Capita:Q', scale=alt.Scale(range=['lightblue', 'darkblue']), title='GDP Per Capita ($B)', legend=alt.Legend(orient='bottom'))
 ).transform_lookup(
     lookup='id',
     from_=alt.LookupData(data=dataset, key='ID', fields=['GDP Per Capita'])
 ).project(
     type='naturalEarth1'
 ).properties(
-    title='Global GDP Per Capita',
     width=800,
     height=500
 )
