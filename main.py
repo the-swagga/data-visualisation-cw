@@ -12,14 +12,14 @@ from vega_datasets import data
 # Western Sahara - ID:732 Population:0.6 GDP:1 - No reliable data, imputed with rough estimates
 
 dataset = pd.read_csv('country_economics_data.csv')
-dataset['GDP per Capita'] = dataset['GDP'] / dataset['Population']
+dataset['GDP Per Capita'] = dataset['GDP'] / dataset['Population']
 dataset['ID'] = dataset['ID'].astype(int)
 
 countries = alt.topo_feature(data.world_110m.url, 'countries')
 
 chart = alt.Chart(countries).mark_geoshape(
     stroke='white',
-    strokeWidth=0.5
+    strokeWidth=0.25
 ).encode(
     color=alt.Color('GDP Per Capita:Q', scale=alt.Scale(range=['lightblue', 'darkblue']), title='GDP Per Capita'),
 ).transform_lookup(
