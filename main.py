@@ -17,19 +17,27 @@ dataset['ID'] = dataset['ID'].astype(int)
 
 countries = alt.topo_feature(data.world_110m.url, 'countries')
 
-chart = alt.Chart(countries).mark_geoshape(
-    stroke='white',
-    strokeWidth=0.25
-).encode(
-    color=alt.Color('GDP Per Capita:Q', scale=alt.Scale(range=['lightblue', 'darkblue']), title='GDP Per Capita ($B)', legend=alt.Legend(orient='bottom'))
-).transform_lookup(
-    lookup='id',
-    from_=alt.LookupData(data=dataset, key='ID', fields=['GDP Per Capita'])
-).project(
-    type='naturalEarth1'
-).properties(
-    width=800,
-    height=500
+gdp_per_capita_map = (alt.Chart(countries).mark_geoshape(stroke='white', strokeWidth=0.25).encode(
+    color=alt.Color('GDP Per Capita:Q', scale=alt.Scale(range=['lightblue', 'darkblue']), title='GDP Per Capita ($B)', legend=alt.Legend(orient='right')))
+    .transform_lookup(
+        lookup='id',
+        from_=alt.LookupData(data=dataset, key='ID', fields=['GDP Per Capita']))
+    .project(
+        type='naturalEarth1')
+    .properties(
+        width=1000,
+        height=500)
 )
 
-chart.save("chart.html")
+affiliation_scatter = alt.Chart(dataset).mark_circle().encode(
+    x=alt.X('GDP Growth:Q', title='GDP Growth (%)', scale=alt.Scale(domain=[-5, 15])),
+    y=alt.Y('Inflation Rate:Q', title='Inflation Rate (%)'),
+    color=alt.Color('Affiliation:N', scale=alt.Scale(domain=['G7', 'BRICS', 'ASEAN'], range=['blue', 'darkgreen', 'red']), legend=alt.Legend(title='Affiliation')),
+    size=alt.Size('GDP:Q', scale=alt.Scale(range=[50,500]), legend=None)).properties(
+        width = 800,
+        height = 400
+)
+
+dashboard = gdp_per_capita_map & affiliation_scatter
+
+dashboard.save("dashboard.html")
