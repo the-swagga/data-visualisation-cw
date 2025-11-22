@@ -25,19 +25,31 @@ gdp_per_capita_map = (alt.Chart(countries).mark_geoshape(stroke='white', strokeW
     .project(
         type='naturalEarth1')
     .properties(
-        width=1000,
-        height=500)
+        width=800,
+        height=400)
 )
 
-affiliation_scatter = alt.Chart(dataset).mark_circle().encode(
-    x=alt.X('GDP Growth:Q', title='GDP Growth (%)', scale=alt.Scale(domain=[-5, 15])),
-    y=alt.Y('Inflation Rate:Q', title='Inflation Rate (%)'),
-    color=alt.Color('Affiliation:N', scale=alt.Scale(domain=['G7', 'BRICS', 'ASEAN'], range=['blue', 'darkgreen', 'red']), legend=alt.Legend(title='Affiliation')),
-    size=alt.Size('GDP:Q', scale=alt.Scale(range=[50,500]), legend=None)).properties(
-        width = 800,
+gdp_pop_scatter = alt.Chart(dataset).mark_circle(clip=True).encode(
+    x=alt.X('Population:Q', title='Population (M)', scale=alt.Scale(type='log'), axis=alt.Axis(grid=False)),
+    y=alt.Y('GDP:Q', title='GDP ($B)', scale=alt.Scale(domain=[-10, 5000]), axis=alt.Axis(grid=False)),
+    color=alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Oceania'], range=['Orange', 'Blue', 'Red']), legend=alt.Legend(title='Region', orient='bottom')),
+    size=alt.Size('GDP Per Capita:Q', scale=alt.Scale(range=[50,500]), legend=None)).properties(
+        width = 1000,
         height = 400
 )
 
-dashboard = gdp_per_capita_map & affiliation_scatter
+continent_bar = alt.Chart(dataset).transform_filter(
+    'datum.Subregion != null'
+).mark_bar().encode(
+    x=alt.X('mean(GDP Growth):Q', title='Average GDP Growth (%)'),
+    y=alt.Y('Subregion:N', title='', sort='x'),
+    color=alt.Color('Region:N', legend=None)
+).properties(
+    width=600,
+    height=400,
+    title="Average GDP Growth by Region"
+)
+
+dashboard = (gdp_per_capita_map | continent_bar) & (gdp_pop_scatter)
 
 dashboard.save("dashboard.html")
