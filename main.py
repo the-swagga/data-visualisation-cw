@@ -1,6 +1,5 @@
 import altair as alt
 import pandas as pd
-from vega_datasets import data
 import json
 
 # Following countries' Population and GDP manually added to the dataset (source: imf.org IMF Datamapper):
@@ -51,7 +50,7 @@ gdp_pop_scatter = alt.Chart(global_south_dataset).mark_circle(clip=True).encode(
 continent_bar = alt.Chart(global_south_dataset).transform_filter(
     'datum.Subregion != null'
 ).mark_bar().encode(
-    x=alt.X('mean(GDP Growth):Q', title='Average GDP Growth (%)'),
+    x=alt.X('mean(GDP Growth):Q', title='Average GDP Growth (%)', axis=alt.Axis(grid=False)),
     y=alt.Y('Subregion:N', title='', sort='-x'),
     color=alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'], range=['Blue', 'Red', 'Orange']), legend=None)
 ).properties(
