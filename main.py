@@ -11,8 +11,10 @@ import json
 # North Macedonia - ID:807 Population:1.81 GDP:19
 # Western Sahara - ID:732 Population:0.6 GDP:1 - No reliable data, imputed with rough estimates
 
+# Area and Currency also manually added for countries in the Global South
+
 dataset = pd.read_csv('mod_country_economics_data.csv')
-dataset['GDP Per Capita'] = dataset['GDP'] / dataset['Population']
+dataset['GDP Per Capita'] = (dataset['GDP'] * 1000000000) / (dataset['Population'] * 1000000)
 dataset['Population Density'] = (dataset['Population'] / dataset['Area']) * 1000000
 dataset['ID'] = dataset['ID'].astype(int)
 
@@ -27,7 +29,7 @@ with open("world_110m.json", "r") as world_110m_json:
 countries = alt.Data(values=world_110m, format=alt.DataFormat(type='topojson', feature='countries'))
 
 gdp_per_capita_map = (alt.Chart(countries).mark_geoshape(stroke='white', strokeWidth=0.25).encode(
-    color=alt.Color('GDP Per Capita:Q', scale=alt.Scale(range=['lightblue', 'darkblue']), title='GDP Per Capita ($B)', legend=alt.Legend(orient='right')),
+    color=alt.Color('GDP Per Capita:Q', scale=alt.Scale(range=['lightblue', 'darkblue']), title='GDP Per Capita ($)', legend=alt.Legend(orient='right')),
     tooltip=[alt.Tooltip('Name:N', title='Country'), alt.Tooltip('GDP:Q', title='GDP ($B)'), alt.Tooltip('Currency:N', title='Currency'), alt.Tooltip('Area:Q', title='Area (M²)'), alt.Tooltip('Population:Q', title='Population (Million)')]
 ).transform_lookup(
         lookup='id',
@@ -40,8 +42,8 @@ gdp_per_capita_map = (alt.Chart(countries).mark_geoshape(stroke='white', strokeW
 )
 
 unemployment_text = pd.DataFrame({
-    'x': [0.5, 0.5, 2000, 2000],
-    'y': [-5, 35, -5, 35],
+    'x': [5000, 5000, 85000, 85000],
+    'y': [-5, 36, -5, 36],
     'text': ['Low Income, Low Unemployment', 'Low Income, High Unemployment', 'High Income, Low Unemployment', 'High Income, High Unemployment']
 })
 unemployment_annotations = alt.Chart(unemployment_text).mark_text(align='center', baseline='top', fontWeight='bold', fontStyle='italic').encode(
@@ -50,11 +52,14 @@ unemployment_annotations = alt.Chart(unemployment_text).mark_text(align='center'
     text='text:N'
 )
 
+global_south_dataset['Unemployment Rate'] = global_south_dataset['Jobless Rate'].astype(str) + '%'
+global_south_dataset['GDP Per Capita '] = global_south_dataset['GDP Per Capita'].round(2)
+
 unemployment_scatter = alt.Chart(global_south_dataset).mark_circle(clip=True).encode(
-    x=alt.X('GDP Per Capita:Q', title='GDP Per Capita', scale=alt.Scale(type='log'), axis=alt.Axis(grid=False)),
+    x=alt.X('GDP Per Capita:Q', title='GDP Per Capita', scale=alt.Scale(domain=[-10000, 100000]), axis=alt.Axis(grid=False)),
     y=alt.Y('Jobless Rate:Q', title='Unemployment Rate (%)', scale=alt.Scale(domain=[-10, 40]), axis=alt.Axis(grid=False)),
     color=alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'], range=['Blue', 'Red', 'Orange']), legend=alt.Legend(title='Region', orient='right', offset=12.5, symbolSize=200)),
-    tooltip=[alt.Tooltip('Name:N', title='Country')],
+    tooltip=[alt.Tooltip('Name:N', title='Country'), 'Unemployment Rate', 'GDP Per Capita '],
     size=alt.Size('GDP:Q', scale=alt.Scale(range=[50, 500]), legend=None)
 ).properties(
         width = 1000,
