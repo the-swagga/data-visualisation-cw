@@ -38,27 +38,105 @@ gdp_per_capita_map = (alt.Chart(countries).mark_geoshape(stroke='white', strokeW
         height=400)
 )
 
-gdp_pop_scatter = alt.Chart(global_south_dataset).mark_circle(clip=True).encode(
+unemployment_text = pd.DataFrame({
+    'x': [0.5, 0.5, 2000, 2000],
+    'y': [-5, 35, -5, 35],
+    'text': ['Low Income, Low Unemployment', 'Low Income, High Unemployment', 'High Income, Low Unemployment', 'High Income, High Unemployment']
+})
+unemployment_annotations = alt.Chart(unemployment_text).mark_text(align='center', baseline='top', fontWeight='bold', fontStyle='italic').encode(
+    x='x:Q',
+    y='y:Q',
+    text='text:N'
+)
+
+unemployment_scatter = alt.Chart(global_south_dataset).mark_circle(clip=True).encode(
     x=alt.X('GDP Per Capita:Q', title='GDP Per Capita', scale=alt.Scale(type='log'), axis=alt.Axis(grid=False)),
-    y=alt.Y('Jobless Rate:Q', title='Unemployment Rate (%)', scale=alt.Scale(domain=[0, 50]), axis=alt.Axis(grid=False)),
-    color=alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'], range=['Blue', 'Red', 'Orange']), legend=alt.Legend(title='Region', orient='bottom')),
-    size=alt.Size('GDP:Q', scale=alt.Scale(range=[75, 750]), legend=None)).properties(
+    y=alt.Y('Jobless Rate:Q', title='Unemployment Rate (%)', scale=alt.Scale(domain=[-10, 40]), axis=alt.Axis(grid=False)),
+    color=alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'], range=['Blue', 'Red', 'Orange']), legend=alt.Legend(title='Region', orient='right', offset=12.5, symbolSize=200)),
+    tooltip=['Name'],
+    size=alt.Size('GDP:Q', scale=alt.Scale(range=[50, 500]), legend=None)
+).properties(
         width = 1000,
         height = 400
 )
 
-continent_bar = alt.Chart(global_south_dataset).transform_filter(
+unemployment_chart = (unemployment_annotations + unemployment_scatter).resolve_scale(color='independent')
+
+gdp_growth_by_subregion = global_south_dataset.groupby(['Subregion', 'Region'], as_index=False)['GDP Growth'].mean().rename(columns={'GDP Growth': 'Mean GDP Growth'})
+gdp_growth_by_subregion['Mean GDP Growth Real'] = gdp_growth_by_subregion['Mean GDP Growth'].round(2)
+gdp_growth_by_subregion['Mean GDP Growth'] = gdp_growth_by_subregion['Mean GDP Growth Real'].astype(str) + '%'
+
+continent_bar = alt.Chart(gdp_growth_by_subregion).transform_filter(
     'datum.Subregion != null'
 ).mark_bar().encode(
-    x=alt.X('mean(GDP Growth):Q', title='Average GDP Growth (%)', axis=alt.Axis(grid=False)),
+    x=alt.X('Mean GDP Growth Real:Q', title='Average GDP Growth (%)', axis=alt.Axis(grid=False)),
     y=alt.Y('Subregion:N', title='', sort='-x'),
-    color=alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'], range=['Blue', 'Red', 'Orange']), legend=None)
+    color=alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'], range=['Blue', 'Red', 'Orange']), legend=None),
+    tooltip=['Region', 'Subregion', 'Mean GDP Growth']
 ).properties(
-    width=600,
+    width=700,
     height=400,
-    title="GDP Growth in the Global South"
+    title='GDP Growth in the Global South'
 )
 
-dashboard = (gdp_per_capita_map | continent_bar) & (gdp_pop_scatter)
+metrics = [
+    "Interest Rate",
+    "Inflation Rate",
+    "Jobless Rate",
+    "Gov. Budget",
+    "Debt/GDP",
+    "Current Account"
+]
+
+affiliation_dataset = dataset[dataset['Affiliation'].isin(['G7', 'BRICS', 'ASEAN'])].copy()
+affiliation_dataset['Economic Stability Score'] = 15+5*((affiliation_dataset['Gov. Budget']/2.8)*0.1 + (affiliation_dataset['Current Account']*2)*0.1 - (affiliation_dataset['Debt/GDP']/61)*0.1 - (affiliation_dataset['Inflation Rate']/8.3)*0.3 - (affiliation_dataset['Jobless Rate']/7.4)*0.2 - (affiliation_dataset['Interest Rate']/7.8)*0.2).round(2)
+affiliation_dataset['GDP Growth '] = affiliation_dataset['GDP Growth'].astype(str) + '%'
+affiliation_dataset['Inflation Rate '] = affiliation_dataset['Inflation Rate'].astype(str) + '%'
+affiliation_dataset['Jobless Rate '] = affiliation_dataset['Jobless Rate'].astype(str) + '%'
+affiliation_dataset['Interest Rate '] = affiliation_dataset['Interest Rate'].astype(str) + '%'
+
+affiliation_text = pd.DataFrame({
+    'x': [-2, -2, 12, 12],
+    'y': [4, 32.5, 4, 32.5],
+    'text': ['Stagnant and Unstable Economy', 'Stagnant and Stable Economy', 'Growing and Unstable Economy', 'Growing and Stable Economy']
+})
+affiliation_annotations = alt.Chart(affiliation_text).mark_text(align='center', baseline='top', fontWeight='bold', fontStyle='italic').encode(
+    x='x:Q',
+    y='y:Q',
+    text='text:N'
+)
+
+affiliation_scatter = alt.Chart(affiliation_dataset).mark_point(size=60).encode(
+    y=alt.Y('Economic Stability Score', title="Economic Stability Score", scale=alt.Scale(domain=[0, 35]), axis=alt.Axis(grid=False)),
+    x=alt.X('GDP Growth:Q', title='GDP Growth', scale=alt.Scale(domain=[-5, 15]), axis=alt.Axis(grid=False)),
+    color=alt.Color('Affiliation', scale=alt.Scale(domain=['G7', 'BRICS', 'ASEAN'], range=['Blue', 'Red', 'Orange']), legend=alt.Legend(title='Affiliation', orient='right', offset=12.5, symbolSize=200)),
+    tooltip=['Name', 'Economic Stability Score', 'GDP Growth ', 'Inflation Rate ', 'Jobless Rate ', 'Interest Rate ']
+).properties(
+    width=575,
+    height=400,
+    title="G7 vs BRICS vs ASEAN: Economic Stability against GDP Growth"
+)
+
+affiliation_chart = (affiliation_annotations + affiliation_scatter).resolve_scale(color='independent')
+
+title_line = alt.Chart(pd.DataFrame({'y': [0]})).mark_rule(
+    strokeWidth=1,
+    color='black'
+).encode(
+    y=alt.Y('y:Q', axis=None)
+).properties(
+    width=1750,
+    height=1
+)
+
+charts = alt.vconcat((gdp_per_capita_map | continent_bar), (unemployment_chart | affiliation_chart)).resolve_scale(color='independent')
+
+dashboard = alt.vconcat(title_line, charts).properties(
+    title={
+        "text": "Exploring the Economics of the Global South in 2025",
+        "fontSize": 24,
+        "anchor": "middle"
+    }
+)
 
 dashboard.save("dashboard.html")
