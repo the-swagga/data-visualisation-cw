@@ -21,16 +21,15 @@ def gdp_per_capita_map(data):
     ).project(
         type='naturalEarth1'
     ).properties(
-        width=800,
-        height=462.5)
+        width=762.5,
+        height=425)
     )
 
     return gdp_per_capita_map
 
 
 def gdp_growth_bar(data):
-    gdp_growth_by_subregion = data.groupby(['Subregion', 'Region'], as_index=False)[
-        'GDP Growth'].mean().rename(columns={'GDP Growth': 'Mean GDP Growth'})
+    gdp_growth_by_subregion = data.groupby(['Subregion', 'Region'], as_index=False)['GDP Growth'].mean().rename(columns={'GDP Growth': 'Mean GDP Growth'})
     gdp_growth_by_subregion['Mean GDP Growth Real'] = gdp_growth_by_subregion['Mean GDP Growth'].round(2)
     gdp_growth_by_subregion['Mean GDP Growth'] = gdp_growth_by_subregion['Mean GDP Growth Real'].astype(str) + '%'
 
@@ -49,23 +48,14 @@ def gdp_growth_bar(data):
                                                   legend=None), alt.value('lightgray')),
         tooltip=['Region', 'Subregion', 'Mean GDP Growth', 'Total Countries:Q']
     ).properties(
-        width=857.5,
-        height=462.5,
+        width=812.5,
+        height=425,
         title='GDP Growth in the Global South'
     ).add_params(con_select)
 
     return gdp_growth_bar
 
 def affiliation_scatter(data):
-    metrics = [
-        "Interest Rate",
-        "Inflation Rate",
-        "Jobless Rate",
-        "Gov. Budget",
-        "Debt/GDP",
-        "Current Account"
-    ]
-
     affiliation_dataset = data[data['Affiliation'].isin(['G7', 'BRICS', 'ASEAN'])].copy()
 
     affiliation_dataset['Economic Stability Score'] = 15 + 5 * ((affiliation_dataset['Gov. Budget'] / 2.8) * 0.1 + (affiliation_dataset['Current Account'] * 2) * 0.1 - (affiliation_dataset['Debt/GDP'] / 61) * 0.1 - (affiliation_dataset['Inflation Rate'] / 8.3) * 0.3 - (affiliation_dataset['Jobless Rate'] / 7.4) * 0.2 - (affiliation_dataset['Interest Rate'] / 7.8) * 0.2).round(2)
@@ -102,8 +92,8 @@ def affiliation_scatter(data):
         tooltip=[alt.Tooltip('Name:N', title='Country'), 'Economic Stability Score', 'GDP Growth ', 'Inflation Rate ',
                  'Jobless Rate ', 'Interest Rate ']
     ).properties(
-        width=902.5,
-        height=462.5,
+        width=812.5,
+        height=425,
         title="G7 vs BRICS vs ASEAN: Economic Stability against GDP Growth"
     ).add_params(aff_select)
 
@@ -143,8 +133,8 @@ def unemployment_scatter(data):
         tooltip=[alt.Tooltip('Name:N', title='Country'), 'Unemployment Rate', 'GDP Per Capita '],
         size=alt.condition(une_select, alt.Size('GDP:Q', scale=alt.Scale(range=[50, 500]), legend=None), alt.value(50))
     ).properties(
-        width=857.5,
-        height=462.5,
+        width=812.5,
+        height=425,
         title="Unemployment against GDP per Capita in the Global South"
     ).add_params(une_select)
 

@@ -28,7 +28,7 @@ global_south_dataset = dataset[dataset["Subregion"].isin(global_south_regions)].
 gdp_per_capita_map = charts.gdp_per_capita_map(global_south_dataset)
 unemployment_scatter = charts.unemployment_scatter(global_south_dataset)
 gdp_growth_bar = charts.gdp_growth_bar(global_south_dataset)
-affiliation_scatter = charts.affiliation_scatter(global_south_dataset)
+affiliation_scatter = charts.affiliation_scatter(dataset)
 
 charts = alt.vconcat((gdp_per_capita_map | gdp_growth_bar), (affiliation_scatter | unemployment_scatter)).resolve_scale(color='independent')
 
@@ -36,7 +36,7 @@ charts = alt.vconcat((gdp_per_capita_map | gdp_growth_bar), (affiliation_scatter
 title_line = alt.Chart(pd.DataFrame({'y': [0]})).mark_rule(strokeWidth=1, color='black').encode(
     y=alt.Y('y:Q', axis=None)
 ).properties(
-    width=1925,
+    width=1810,
     height=1
 )
 dashboard = alt.vconcat(title_line, charts).properties(
