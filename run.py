@@ -25,7 +25,7 @@ global_south_regions = ["Northern Africa", "Southern Asia", "South-Eastern Asia"
 global_south_dataset = dataset[dataset["Subregion"].isin(global_south_regions)].copy()
 
 # Generate Charts #
-gdp_per_capita_map = charts.gdp_per_capita_choropleth(global_south_dataset)
+gdp_per_capita_map = charts.gdp_per_capita_map(global_south_dataset)
 unemployment_scatter = charts.unemployment_scatter(global_south_dataset)
 gdp_growth_bar = charts.gdp_growth_bar(global_south_dataset)
 affiliation_scatter = charts.affiliation_scatter(global_south_dataset)
