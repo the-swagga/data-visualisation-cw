@@ -47,4 +47,4 @@ dashboard = alt.vconcat(title_line, charts).properties(
     }
 )
 
-dashboard.save("dashboard.html")
+dashboard.save("global_south_dashboard.html")
