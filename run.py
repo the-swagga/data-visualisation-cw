@@ -13,7 +13,7 @@ import json
 
 # Area and Currency also manually added for countries in the Global South
 
-dataset = pd.read_csv('mod_country_economics_data.csv')
+dataset = pd.read_csv('data/mod_country_economics_data.csv')
 dataset['GDP Per Capita'] = (dataset['GDP'] * 1000000000) / (dataset['Population'] * 1000000)
 dataset['Population Density'] = (dataset['Population'] / dataset['Area']) * 1000000
 dataset['ID'] = dataset['ID'].astype(int)
@@ -23,7 +23,7 @@ global_south_regions = ["Northern Africa", "Southern Asia", "South-Eastern Asia"
                         "Central America", "South America", "Southern Africa"]
 global_south_dataset = dataset[dataset["Subregion"].isin(global_south_regions)].copy()
 
-with open("world_110m.json", "r") as world_110m_json:
+with open("data/world_110m.json", "r") as world_110m_json:
     world_110m = json.load(world_110m_json)
 
 countries = alt.Data(values=world_110m, format=alt.DataFormat(type='topojson', feature='countries'))
