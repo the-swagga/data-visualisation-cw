@@ -38,7 +38,7 @@ gdp_per_capita_map = (alt.Chart(countries).mark_geoshape(stroke='white', strokeW
         type='naturalEarth1'
 ).properties(
         width=800,
-        height=400)
+        height=462.5)
 )
 
 unemployment_text = pd.DataFrame({
@@ -53,7 +53,7 @@ unemployment_annotations = alt.Chart(unemployment_text).mark_text(align='center'
 )
 
 global_south_dataset['Unemployment Rate'] = global_south_dataset['Jobless Rate'].astype(str) + '%'
-global_south_dataset['GDP Per Capita '] = global_south_dataset['GDP Per Capita'].round(2)
+global_south_dataset['GDP Per Capita '] = (global_south_dataset['GDP Per Capita'].round(0)).astype(int).astype(str) + '$'
 
 une_select = alt.selection_point(fields=['Region'], on='click', clear='none')
 
@@ -64,8 +64,9 @@ unemployment_scatter = alt.Chart(global_south_dataset).mark_circle(clip=True).en
     tooltip=[alt.Tooltip('Name:N', title='Country'), 'Unemployment Rate', 'GDP Per Capita '],
     size=alt.condition(une_select, alt.Size('GDP:Q', scale=alt.Scale(range=[50, 500]), legend=None), alt.value(50))
 ).properties(
-        width = 1000,
-        height = 400
+        width = 857.5,
+        height = 462.5,
+        title="Unemployment against GDP per Capita in the Global South"
 ).add_params(une_select)
 
 unemployment_chart = (unemployment_annotations + unemployment_scatter).resolve_scale(color='independent')
@@ -73,6 +74,9 @@ unemployment_chart = (unemployment_annotations + unemployment_scatter).resolve_s
 gdp_growth_by_subregion = global_south_dataset.groupby(['Subregion', 'Region'], as_index=False)['GDP Growth'].mean().rename(columns={'GDP Growth': 'Mean GDP Growth'})
 gdp_growth_by_subregion['Mean GDP Growth Real'] = gdp_growth_by_subregion['Mean GDP Growth'].round(2)
 gdp_growth_by_subregion['Mean GDP Growth'] = gdp_growth_by_subregion['Mean GDP Growth Real'].astype(str) + '%'
+
+countries_per_subregion = global_south_dataset.groupby('Subregion').size().reset_index(name='Total Countries')
+gdp_growth_by_subregion = gdp_growth_by_subregion.merge(countries_per_subregion, on='Subregion', how='left')
 
 con_select = alt.selection_point(fields=['Region'], on='click', clear='none')
 
@@ -82,10 +86,10 @@ continent_bar = alt.Chart(gdp_growth_by_subregion).transform_filter(
     x=alt.X('Mean GDP Growth Real:Q', title='Average GDP Growth (%)', axis=alt.Axis(grid=False)),
     y=alt.Y('Subregion:N', title='', sort='-x'),
     color=alt.condition(con_select, alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'], range=['Blue', 'Red', 'Orange']), legend=None), alt.value('lightgray')),
-    tooltip=['Region', 'Subregion', 'Mean GDP Growth']
+    tooltip=['Region', 'Subregion', 'Mean GDP Growth', 'Total Countries:Q']
 ).properties(
-    width=700,
-    height=400,
+    width=857.5,
+    height=462.5,
     title='GDP Growth in the Global South'
 ).add_params(con_select)
 
@@ -125,8 +129,8 @@ affiliation_scatter = alt.Chart(affiliation_dataset).mark_point().encode(
     size=alt.condition(aff_select, alt.value(66), alt.value(33)),
     tooltip=[alt.Tooltip('Name:N', title='Country'), 'Economic Stability Score', 'GDP Growth ', 'Inflation Rate ', 'Jobless Rate ', 'Interest Rate ']
 ).properties(
-    width=575,
-    height=400,
+    width=902.5,
+    height=462.5,
     title="G7 vs BRICS vs ASEAN: Economic Stability against GDP Growth"
 ).add_params(aff_select)
 
@@ -135,11 +139,11 @@ affiliation_chart = (affiliation_annotations + affiliation_scatter).resolve_scal
 title_line = alt.Chart(pd.DataFrame({'y': [0]})).mark_rule(strokeWidth=1, color='black').encode(
     y=alt.Y('y:Q', axis=None)
 ).properties(
-    width=1750,
+    width=1925,
     height=1
 )
 
-charts = alt.vconcat((gdp_per_capita_map | continent_bar), (unemployment_chart | affiliation_chart)).resolve_scale(color='independent')
+charts = alt.vconcat((gdp_per_capita_map | continent_bar ), (affiliation_chart | unemployment_chart)).resolve_scale(color='independent')
 
 dashboard = alt.vconcat(title_line, charts).properties(
     title={
