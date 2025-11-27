@@ -11,6 +11,8 @@ import charts
 # North Macedonia - ID:807 Population:1.81 GDP:19
 # Western Sahara - ID:732 Population:0.6 GDP:1 - No reliable data, imputed with rough estimates
 
+# GDP Growth added for affiliated countries (source: imf.org IMF Datamapper)
+
 # Area and Currency also manually added for countries in the Global South
 
 
@@ -25,10 +27,10 @@ global_south_regions = ["Northern Africa", "Southern Asia", "South-Eastern Asia"
 global_south_dataset = dataset[dataset["Subregion"].isin(global_south_regions)].copy()
 
 # Generate Charts #
-gdp_per_capita_map = charts.gdp_per_capita_map(global_south_dataset)
-unemployment_scatter = charts.unemployment_scatter(global_south_dataset)
+gdp_per_capita_map = charts.gdp_per_capita_map(dataset)
 gdp_growth_bar = charts.gdp_growth_bar(global_south_dataset)
 affiliation_scatter = charts.affiliation_scatter(dataset)
+unemployment_scatter = charts.unemployment_scatter(global_south_dataset)
 
 charts = alt.vconcat((gdp_per_capita_map | gdp_growth_bar), (affiliation_scatter | unemployment_scatter)).resolve_scale(color='independent')
 
@@ -41,8 +43,11 @@ title_line = alt.Chart(pd.DataFrame({'y': [0]})).mark_rule(strokeWidth=1, color=
 )
 dashboard = alt.vconcat(title_line, charts).properties(
     title={
-        "text": "Exploring the Economics of the Global South in 2025",
+        "text": "Exploring the Global Economic Data of 2025",
         "fontSize": 24,
+        "subtitle": "Highlighting the Rising Economic Influence of the Global South",
+        "subtitleFontSize": 14,
+        "subtitleFontStyle": "italic",
         "anchor": "middle"
     }
 )

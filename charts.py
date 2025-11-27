@@ -56,18 +56,16 @@ def gdp_growth_bar(data):
     return gdp_growth_bar
 
 def affiliation_scatter(data):
-    affiliation_dataset = data[data['Affiliation'].isin(['G7', 'BRICS', 'ASEAN'])].copy()
+    data['Economic Stability Score'] = 20 + 5 * ((data['Gov. Budget'] / 2.8) * 0.1 + (data['Current Account'] * 2) * 0.1 - (data['Debt/GDP'] / 61) * 0.1 - (data['Inflation Rate'] / 8.3) * 0.3 - (data['Jobless Rate'] / 7.4) * 0.2 - (data['Interest Rate'] / 7.8) * 0.2).round(2)
 
-    affiliation_dataset['Economic Stability Score'] = 15 + 5 * ((affiliation_dataset['Gov. Budget'] / 2.8) * 0.1 + (affiliation_dataset['Current Account'] * 2) * 0.1 - (affiliation_dataset['Debt/GDP'] / 61) * 0.1 - (affiliation_dataset['Inflation Rate'] / 8.3) * 0.3 - (affiliation_dataset['Jobless Rate'] / 7.4) * 0.2 - (affiliation_dataset['Interest Rate'] / 7.8) * 0.2).round(2)
-
-    affiliation_dataset['GDP Growth '] = affiliation_dataset['GDP Growth'].astype(str) + '%'
-    affiliation_dataset['Inflation Rate '] = affiliation_dataset['Inflation Rate'].astype(str) + '%'
-    affiliation_dataset['Jobless Rate '] = affiliation_dataset['Jobless Rate'].astype(str) + '%'
-    affiliation_dataset['Interest Rate '] = affiliation_dataset['Interest Rate'].astype(str) + '%'
+    data['GDP Growth '] = data['GDP Growth'].astype(str) + '%'
+    data['Inflation Rate '] = data['Inflation Rate'].astype(str) + '%'
+    data['Jobless Rate '] = data['Jobless Rate'].astype(str) + '%'
+    data['Interest Rate '] = data['Interest Rate'].astype(str) + '%'
 
     affiliation_text = pd.DataFrame({
-        'x': [-2, -2, 12, 12],
-        'y': [4, 32.5, 4, 32.5],
+        'x': [-6, -6, 16, 16],
+        'y': [4, 52, 4, 52],
         'text': ['Stagnant and Unstable Economy', 'Stagnant and Stable Economy', 'Growing and Unstable Economy',
                  'Growing and Stable Economy']
     })
@@ -80,21 +78,18 @@ def affiliation_scatter(data):
 
     aff_select = alt.selection_point(fields=['Affiliation'], on='click', clear='none')
 
-    affiliation_scatter = alt.Chart(affiliation_dataset).mark_point().encode(
-        y=alt.Y('Economic Stability Score', title="Economic Stability Score", scale=alt.Scale(domain=[0, 35]),
+    affiliation_scatter = alt.Chart(data).mark_point().encode(
+        y=alt.Y('Economic Stability Score', title="Economic Stability Score", scale=alt.Scale(domain=[0, 55], clamp=True),
                 axis=alt.Axis(grid=False)),
-        x=alt.X('GDP Growth:Q', title='GDP Growth (%)', scale=alt.Scale(domain=[-5, 15]), axis=alt.Axis(grid=False)),
-        color=alt.condition(aff_select, alt.Color('Affiliation:N', scale=alt.Scale(domain=['G7', 'BRICS', 'ASEAN'],
-                                                                                   range=['Blue', 'Red', 'Orange']),
-                                                  legend=alt.Legend(title='Affiliation', orient='right', offset=12.5,
-                                                                    symbolSize=200)), alt.value('lightgray')),
+        x=alt.X('GDP Growth:Q', title='GDP Growth (%)', scale=alt.Scale(domain=[-10, 20], clamp=True), axis=alt.Axis(grid=False)),
+        color=alt.condition(aff_select, alt.Color('Affiliation:N', scale=alt.Scale(domain=['G7', 'BRICS', 'ASEAN', 'Unaffiliated'], range=['Blue', 'Red', 'Orange', 'Gray']), legend=alt.Legend(title='Affiliation', orient='right', offset=12.5, symbolSize=200)), alt.value('lightgray')),
         size=alt.condition(aff_select, alt.value(66), alt.value(33)),
         tooltip=[alt.Tooltip('Name:N', title='Country'), 'Economic Stability Score', 'GDP Growth ', 'Inflation Rate ',
                  'Jobless Rate ', 'Interest Rate ']
     ).properties(
-        width=812.5,
+        width=800,
         height=425,
-        title="G7 vs BRICS vs ASEAN: Economic Stability against GDP Growth"
+        title="Economic Stability against GDP Growth by Affiliation"
     ).add_params(aff_select)
 
     affiliation_scatter = (affiliation_annotations + affiliation_scatter).resolve_scale(color='independent')
