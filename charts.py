@@ -102,8 +102,8 @@ def unemployment_scatter(data):
     )
 
     data['Unemployment Rate'] = data['Jobless Rate'].astype(str) + '%'
-    data['GDP Per Capita '] = (data['GDP Per Capita'].round(0)).astype(int).astype(
-        str) + '$'
+    data['GDP Per Capita ($)'] = (data['GDP Per Capita'].round(0)).astype(int).astype(str)
+    data['GDP ($B)'] = data['GDP'].astype(str)
 
     une_select = alt.selection_point(fields=['Region'], on='click', clear='none')
 
@@ -111,8 +111,8 @@ def unemployment_scatter(data):
         x=alt.X('GDP Per Capita:Q', title='GDP Per Capita', scale=alt.Scale(domain=[-10000, 100000]), axis=alt.Axis(grid=False)),
         y=alt.Y('Jobless Rate:Q', title='Unemployment Rate (%)', scale=alt.Scale(domain=[-10, 40]), axis=alt.Axis(grid=False)),
         color=alt.condition(une_select, alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'], range=['Blue', 'Red', 'Orange']), legend=alt.Legend(title='Region', orient='right', offset=12.5, symbolSize=200)), alt.value('lightgray')),
-        tooltip=[alt.Tooltip('Name:N', title='Country'), 'Unemployment Rate', 'GDP Per Capita '],
-        size=alt.condition(une_select, alt.Size('GDP:Q', scale=alt.Scale(range=[50, 500]), legend=None), alt.value(50))
+        tooltip=[alt.Tooltip('Name:N', title='Country'), 'Unemployment Rate', 'GDP Per Capita ($)', 'GDP ($B)'],
+        size=alt.condition(une_select, alt.Size('GDP:Q', scale=alt.Scale(range=[33.3, 666]), legend=None), alt.value(50))
     ).properties(
         width=812.5,
         height=425,
