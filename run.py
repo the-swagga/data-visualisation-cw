@@ -2,14 +2,14 @@ import altair as alt
 import pandas as pd
 import charts
 
-# Following countries' Population and GDP manually added to the dataset (source: imf.org IMF Datamapper):
-# Czechia - ID:203 Population:10.9 GDP:383
-# Democratic Republic of Congo - ID:180 Population:106.55 GDP:82
-# Guinea-Bissau - ID:624 Population:2.02 GDP:2.47
-# Eswatini - ID:748 Population:1.18 GDP:5
-# North Korea - ID:408 Population:26.5 GDP:32 - 2024 Estimated GDP (source: https://www.bok.or.kr/eng/bbs/E0000634/view.do?nttId=10093293&searchCnd=1&searchKwd=&depth2=400417&depth=400417&pageUnit=10&pageIndex=1&programType=newsDataEng&menuNo=400423&oldMenuNo=400417)
-# North Macedonia - ID:807 Population:1.81 GDP:19
-# Western Sahara - ID:732 Population:0.6 GDP:1 - No reliable data, imputed with rough estimates
+# Following countries' information manually added to the dataset (source: imf.org IMF Datamapper):
+# Czechia
+# Democratic Republic of Congo
+# Guinea-Bissau
+# Eswatini
+# North Korea (source: https://www.bok.or.kr/eng/bbs/E0000634/view.do?nttId=10093293&searchCnd=1&searchKwd=&depth2=400417&depth=400417&pageUnit=10&pageIndex=1&programType=newsDataEng&menuNo=400423&oldMenuNo=400417)
+# North Macedonia
+# Western Sahara - No reliable data, rough estimates used
 
 # GDP Growth added for affiliated countries (source: imf.org IMF Datamapper)
 
@@ -52,4 +52,4 @@ dashboard = alt.vconcat(title_line, charts).properties(
     }
 )
 
-dashboard.save("global_south_dashboard.html")
+dashboard.save("global_economic_dashboard.html")

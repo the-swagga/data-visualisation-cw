@@ -8,22 +8,20 @@ def gdp_per_capita_map(data):
 
     countries = alt.Data(values=world_110m, format=alt.DataFormat(type='topojson', feature='countries'))
 
-    gdp_per_capita_map = (alt.Chart(countries).mark_geoshape(stroke='white', strokeWidth=0.25).encode(
-        color=alt.Color('GDP Per Capita:Q', scale=alt.Scale(range=['lightblue', 'darkblue']),
-                        title='GDP Per Capita ($)', legend=alt.Legend(orient='right')),
-        tooltip=[alt.Tooltip('Name:N', title='Country'), alt.Tooltip('GDP:Q', title='GDP ($B)'),
-                 alt.Tooltip('Currency:N', title='Currency'), alt.Tooltip('Area:Q', title='Area (M²)'),
-                 alt.Tooltip('Population:Q', title='Population (Million)')]
+    data['Region '] = data['Region']
+    map_select = alt.selection_point(fields=['Region '], on='click', clear='none')
+
+    gdp_per_capita_map = alt.Chart(countries).mark_geoshape(stroke='white', strokeWidth=0.25).encode(
+        color=alt.condition(map_select, alt.Color('GDP Per Capita:Q', scale=alt.Scale(range=['skyblue', 'darkblue']), legend=alt.Legend(title='GDP Per Capita ($)', orient='right')), alt.value('lightgray')),
+        tooltip=[alt.Tooltip('Name:N', title='Country'), alt.Tooltip('GDP:Q', title='GDP ($B)'), alt.Tooltip('Currency:N', title='Currency'), alt.Tooltip('Area:Q', title='Area (M²)'), alt.Tooltip('Population:Q', title='Population (Million)')]
     ).transform_lookup(
-        lookup='id',
-        from_=alt.LookupData(data=data, key='ID',
-                             fields=['GDP Per Capita', 'Name', 'GDP', 'Currency', 'Area', 'Population'])
+        lookup='id', from_=alt.LookupData(data=data, key='ID',fields=['GDP Per Capita', 'Name', 'GDP', 'Currency', 'Area', 'Population', 'Region '])
     ).project(
         type='naturalEarth1'
     ).properties(
         width=762.5,
-        height=425)
-    )
+        height=425
+    ).add_params(map_select)
 
     return gdp_per_capita_map
 
@@ -38,14 +36,10 @@ def gdp_growth_bar(data):
 
     con_select = alt.selection_point(fields=['Region'], on='click', clear='none')
 
-    gdp_growth_bar = alt.Chart(gdp_growth_by_subregion).transform_filter(
-        'datum.Subregion != null'
-    ).mark_bar().encode(
+    gdp_growth_bar = alt.Chart(gdp_growth_by_subregion).transform_filter('datum.Subregion != null').mark_bar().encode(
         x=alt.X('Mean GDP Growth Real:Q', title='Average GDP Growth (%)', axis=alt.Axis(grid=False)),
         y=alt.Y('Subregion:N', title='', sort='-x'),
-        color=alt.condition(con_select, alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'],
-                                                                              range=['Blue', 'Red', 'Orange']),
-                                                  legend=None), alt.value('lightgray')),
+        color=alt.condition(con_select, alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'],range=['Blue', 'Red', 'Orange']), legend=None), alt.value('lightgray')),
         tooltip=['Region', 'Subregion', 'Mean GDP Growth', 'Total Countries:Q']
     ).properties(
         width=812.5,
@@ -69,8 +63,7 @@ def affiliation_scatter(data):
         'text': ['Stagnant and Unstable Economy', 'Stagnant and Stable Economy', 'Growing and Unstable Economy',
                  'Growing and Stable Economy']
     })
-    affiliation_annotations = alt.Chart(affiliation_text).mark_text(align='center', baseline='top', fontWeight='bold',
-                                                                    fontStyle='italic', opacity=0.75).encode(
+    affiliation_annotations = alt.Chart(affiliation_text).mark_text(align='center', baseline='top', fontWeight='bold', fontStyle='italic', opacity=0.75).encode(
         x='x:Q',
         y='y:Q',
         text='text:N'
@@ -79,13 +72,11 @@ def affiliation_scatter(data):
     aff_select = alt.selection_point(fields=['Affiliation'], on='click', clear='none')
 
     affiliation_scatter = alt.Chart(data).mark_point().encode(
-        y=alt.Y('Economic Stability Score', title="Economic Stability Score", scale=alt.Scale(domain=[0, 55], clamp=True),
-                axis=alt.Axis(grid=False)),
+        y=alt.Y('Economic Stability Score', title="Economic Stability Score", scale=alt.Scale(domain=[0, 55], clamp=True), axis=alt.Axis(grid=False)),
         x=alt.X('GDP Growth:Q', title='GDP Growth (%)', scale=alt.Scale(domain=[-10, 20], clamp=True), axis=alt.Axis(grid=False)),
         color=alt.condition(aff_select, alt.Color('Affiliation:N', scale=alt.Scale(domain=['G7', 'BRICS', 'ASEAN', 'Unaffiliated'], range=['Blue', 'Red', 'Orange', 'Gray']), legend=alt.Legend(title='Affiliation', orient='right', offset=12.5, symbolSize=200)), alt.value('lightgray')),
         size=alt.condition(aff_select, alt.value(66), alt.value(33)),
-        tooltip=[alt.Tooltip('Name:N', title='Country'), 'Economic Stability Score', 'GDP Growth ', 'Inflation Rate ',
-                 'Jobless Rate ', 'Interest Rate ']
+        tooltip=[alt.Tooltip('Name:N', title='Country'), 'Economic Stability Score', 'GDP Growth ', 'Inflation Rate ', 'Jobless Rate ', 'Interest Rate ']
     ).properties(
         width=800,
         height=425,
@@ -117,14 +108,9 @@ def unemployment_scatter(data):
     une_select = alt.selection_point(fields=['Region'], on='click', clear='none')
 
     unemployment_scatter = alt.Chart(data).mark_circle(clip=True).encode(
-        x=alt.X('GDP Per Capita:Q', title='GDP Per Capita', scale=alt.Scale(domain=[-10000, 100000]),
-                axis=alt.Axis(grid=False)),
-        y=alt.Y('Jobless Rate:Q', title='Unemployment Rate (%)', scale=alt.Scale(domain=[-10, 40]),
-                axis=alt.Axis(grid=False)),
-        color=alt.condition(une_select, alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'],
-                                                                              range=['Blue', 'Red', 'Orange']),
-                                                  legend=alt.Legend(title='Region', orient='right', offset=12.5,
-                                                                    symbolSize=200)), alt.value('lightgray')),
+        x=alt.X('GDP Per Capita:Q', title='GDP Per Capita', scale=alt.Scale(domain=[-10000, 100000]), axis=alt.Axis(grid=False)),
+        y=alt.Y('Jobless Rate:Q', title='Unemployment Rate (%)', scale=alt.Scale(domain=[-10, 40]), axis=alt.Axis(grid=False)),
+        color=alt.condition(une_select, alt.Color('Region:N', scale=alt.Scale(domain=['Africa', 'Asia', 'Americas'], range=['Blue', 'Red', 'Orange']), legend=alt.Legend(title='Region', orient='right', offset=12.5, symbolSize=200)), alt.value('lightgray')),
         tooltip=[alt.Tooltip('Name:N', title='Country'), 'Unemployment Rate', 'GDP Per Capita '],
         size=alt.condition(une_select, alt.Size('GDP:Q', scale=alt.Scale(range=[50, 500]), legend=None), alt.value(50))
     ).properties(
