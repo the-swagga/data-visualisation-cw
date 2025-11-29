@@ -8,14 +8,13 @@ def gdp_per_capita_map(data):
 
     countries = alt.Data(values=world_110m, format=alt.DataFormat(type='topojson', feature='countries'))
 
-    data['Region '] = data['Region']
-    map_select = alt.selection_point(fields=['Region '], on='click', clear='none')
+    map_select = alt.selection_point(fields=['Region'], on='click', clear='none')
 
     gdp_per_capita_map = alt.Chart(countries).mark_geoshape(stroke='white', strokeWidth=0.25).encode(
         color=alt.condition(map_select, alt.Color('GDP Per Capita:Q', scale=alt.Scale(range=['skyblue', 'darkblue']), legend=alt.Legend(title='GDP Per Capita ($)', orient='right')), alt.value('lightgray')),
         tooltip=[alt.Tooltip('Name:N', title='Country'), alt.Tooltip('GDP:Q', title='GDP ($B)'), alt.Tooltip('Currency:N', title='Currency'), alt.Tooltip('Area:Q', title='Area (M²)'), alt.Tooltip('Population:Q', title='Population (Million)')]
     ).transform_lookup(
-        lookup='id', from_=alt.LookupData(data=data, key='ID',fields=['GDP Per Capita', 'Name', 'GDP', 'Currency', 'Area', 'Population', 'Region '])
+        lookup='id', from_=alt.LookupData(data=data, key='ID',fields=['GDP Per Capita', 'Name', 'GDP', 'Currency', 'Area', 'Population', 'Region'])
     ).project(
         type='naturalEarth1'
     ).properties(
